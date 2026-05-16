@@ -17,7 +17,7 @@ template = PromptTemplate(
     input_variables=['topic', 'way', 'length']
 )
 
-st.header("TeachMeLLM")
+st.header("AI Learner")
 topic = st.text_input("Enter Topic: ", placeholder="Quantization in LLMs")
 way = st.selectbox(
     "Select explanation style",
