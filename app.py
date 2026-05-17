@@ -314,9 +314,11 @@ with st.sidebar:
         st.info("No learning history yet. Start exploring!")
 
 # ==================== MAIN CONTENT ====================
-st.markdown("# 🎓 AI Learner Pro")
-st.markdown("*Master any topic with AI-powered personalized explanations*")
-
+st.markdown("# 🎓 AI Learner")
+st.markdown(
+    "<center><i>Master any topic with AI-powered personalized explanations</i></center>", 
+    unsafe_allow_html=True
+)
 st.divider()
 
 # Stat Cards
