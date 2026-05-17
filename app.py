@@ -14,7 +14,7 @@ st.set_page_config(
     page_title="🎓 AI Learner Pro",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # ==================== CUSTOM CSS ====================
@@ -27,25 +27,25 @@ st.markdown("""
     
     /* Main Background */
     .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: #333;
+        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+        color: #000;
     }
     
     /* Sidebar Styling */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #f6f8fc 100%);
     }
     
     [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
-        color: white;
+        color: #000;
     }
     
     /* Stat Cards */
     .stat-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #faf7ff 100%);
         padding: 25px;
         border-radius: 15px;
-        color: white;
+        color: #000;
         text-align: center;
         box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
         transition: transform 0.3s ease;

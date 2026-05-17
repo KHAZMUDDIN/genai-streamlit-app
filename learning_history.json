@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-05-17T05:52:12.449848",
+    "topic": "initial_sidebar_state=\"expanded\" opposite of this in streamlit",
+    "style": "easy",
+    "length": "very short",
+    "result": "In Streamlit, `initial_sidebar_state=\"expanded\"` means the sidebar is open by default. \n\nThe opposite is `initial_sidebar_state=\"collapsed\"`, which means the sidebar is closed by default.\n\nExample:\n```python\nst.sidebar.image(\"image.jpg\", initial_sidebar_state=\"expanded\")  # Open\nst.sidebar.image(\"image.jpg\", initial_sidebar_state=\"collapsed\")  # Closed\n```",
+    "model": "llama-3.3-70b-versatile",
+    "temperature": 0.7,
+    "is_favorite": false
+  }
+]
