@@ -320,35 +320,35 @@ st.markdown("*Master any topic with AI-powered personalized explanations*")
 st.divider()
 
 # Stat Cards
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.markdown("""
-    <div class="stat-card">
-        <div>🧠 Learn</div>
-        <div class="stat-number">∞</div>
-        <div>Master any topic</div>
-    </div>
-    """, unsafe_allow_html=True)
+# col1, col2, col3 = st.columns(3)
+# with col1:
+#     st.markdown("""
+#     <div class="stat-card">
+#         <div>🧠 Learn</div>
+#         <div class="stat-number">∞</div>
+#         <div>Master any topic</div>
+#     </div>
+#     """, unsafe_allow_html=True)
 
-with col2:
-    st.markdown("""
-    <div class="stat-card">
-        <div>💾 Save</div>
-        <div class="stat-number">📚</div>
-        <div>Keep your progress</div>
-    </div>
-    """, unsafe_allow_html=True)
+# with col2:
+#     st.markdown("""
+#     <div class="stat-card">
+#         <div>💾 Save</div>
+#         <div class="stat-number">📚</div>
+#         <div>Keep your progress</div>
+#     </div>
+#     """, unsafe_allow_html=True)
 
-with col3:
-    st.markdown("""
-    <div class="stat-card">
-        <div>📊 Track</div>
-        <div class="stat-number">📈</div>
-        <div>Monitor your journey</div>
-    </div>
-    """, unsafe_allow_html=True)
+# with col3:
+#     st.markdown("""
+#     <div class="stat-card">
+#         <div>📊 Track</div>
+#         <div class="stat-number">📈</div>
+#         <div>Monitor your journey</div>
+#     </div>
+#     """, unsafe_allow_html=True)
 
-st.divider()
+# st.divider()
 
 # Main Input Section
 st.markdown("### 📝 Generate Explanation")
