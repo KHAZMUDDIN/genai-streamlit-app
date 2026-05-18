@@ -8,5 +8,4 @@ python-dotenv==1.1.0
 sentence-transformers==4.1.0
 faiss-cpu==1.7.4
 pypdf==5.5.0
-torch
-torchvision
+torch==2.2.2
