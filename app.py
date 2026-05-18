@@ -10,6 +10,14 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 
 from langchain_core.output_parsers import BaseOutputParser
+import os
+import tempfile
+from langchain_community.document_loaders import PyPDFLoader
+
+
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+
 
 
 # Load environment variables
@@ -374,10 +382,98 @@ with col1:
         label_visibility="collapsed"  # Hide default label
     )
 
-# with col2:
+with col2:
 #     if st.button("🎲 Random", use_container_width=True):
 #         topic = get_random_topic()
 #         st.rerun()
+    
+
+    st.title("📄 PDF Document Loader")
+    st.write("Upload a PDF file to extract its content using LangChain's PyPDFLoader.")
+
+    # 1. Create the file uploader widget
+    uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf"])
+
+    if uploaded_file is not None:
+        # Display a loading spinner while processing
+        with st.spinner("Processing PDF..."):
+            try:
+                # 2. Save the uploaded file to a temporary location
+                # PyPDFLoader requires a physical file path string
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                    temp_file.write(uploaded_file.read())
+                    temp_file_path = temp_file.name
+
+                # 3. Feed the temporary file path into PyPDFLoader
+                loader = PyPDFLoader(temp_file_path)
+                docs = loader.load()
+
+                # 4. Clean up the temporary file from disk
+                os.remove(temp_file_path)
+
+                # --- Success! Now you can use 'docs' ---
+                st.success(f"Successfully loaded {len(docs)} pages!")
+
+                # Optional: Preview the extracted content in the UI
+                st.subheader("Preview Extracted Content")
+                for i, doc in enumerate(docs):
+                    with st.expander(f"Page {i+1}"):
+                        st.write(doc.page_content)
+
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=50
+)
+
+if uploaded_file is not None:
+    chunks = splitter.split_documents(docs)
+
+
+# embeddings = HuggingFaceEmbeddings(
+#     model_name="sentence-transformers/all-MiniLM-L6-v2"
+# )
+
+# # from langchain.vectorstores import FAISS
+
+# vectorstore = FAISS.from_documents(
+#     chunks,
+#     embeddings
+# )
+
+# retriever = vectorstore.as_retriever(
+#     search_type="similarity",
+#     search_kwargs={"k": 3}
+# )
+@st.cache_resource
+def create_vectorstore(chunks):
+
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
+
+    vectorstore = FAISS.from_documents(
+        chunks,
+        embeddings
+    )
+
+    return vectorstore
+
+if uploaded_file is not None:
+
+    chunks = splitter.split_documents(docs)
+
+    vectorstore = create_vectorstore(chunks)
+
+    retriever = vectorstore.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 3}
+    )
+
 
 # Settings Columns
 col1, col2, col3 = st.columns(3)
@@ -422,11 +518,36 @@ if st.button("✨ Generate Explanation", use_container_width=False, type="primar
     else:
         with st.spinner("🤖 AI is thinking..."):
             try:
+                # Retrieve docs
+                docs = retriever.invoke(topic)
+
+                # Combine retrieved chunks
+                context = "\n\n".join(
+                    [doc.page_content for doc in docs]
+                )
                 # Build enhanced prompt
-                prompt_text = f"""
-Explain {topic} in a {way} way.
-Keep the explanation {length}.
-"""
+                # prompt_text = f"""
+                # Explain {topic} in a {way} way.
+                # Keep the explanation {length}.
+                # context: {context}.
+                # """
+                prompt_text = """
+                You are a helpful AI assistant.
+
+                Use the provided context to answer the question.
+
+                Context:
+                {context}
+
+                Question:
+                {question}
+
+                Explanation Style:
+                {way}
+
+                Length:
+                {length}
+                """
                 
                 if include_examples:
                     prompt_text += "Include practical examples.\n"
@@ -439,13 +560,24 @@ Keep the explanation {length}.
                 
                 # Create LLM chain with temperature
                 llm = ChatGroq(model=model, temperature=temperature)
+                
+                # template = PromptTemplate(
+                #     template=prompt_text,
+                #     input_variables=[]
+                # )
                 template = PromptTemplate(
                     template=prompt_text,
-                    input_variables=[]
+                    input_variables=["context", "question", "way", "length"]
                 )
                 
                 chain = template | llm
-                result = chain.invoke({})
+                # result = chain.invoke({})
+                result = chain.invoke({
+                    "context": context,
+                    "question": topic,
+                    "way": way,
+                    "length": length
+                })
                 
                 # Store in session state with additional flags
                 st.session_state.last_result = result.content
