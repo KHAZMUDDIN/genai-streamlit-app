@@ -20,6 +20,8 @@ from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.vectorstores import FAISS
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
+
 
 
 
@@ -180,7 +182,10 @@ def load_embeddings():
     # return HuggingFaceEmbeddings(
     #     model_name="sentence-transformers/all-MiniLM-L6-v2"
     # )
-    return FastEmbedEmbeddings()
+    # return FastEmbedEmbeddings()
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
 def init_session_state():
     """Initialize all session state variables safely"""
     if 'learning_history' not in st.session_state:
