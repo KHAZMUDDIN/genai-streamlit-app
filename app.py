@@ -171,6 +171,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==================== SESSION STATE INITIALIZATION ====================
+@st.cache_resource
+def load_embeddings():
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
 def init_session_state():
     """Initialize all session state variables safely"""
     if 'learning_history' not in st.session_state:
@@ -430,8 +435,8 @@ splitter = RecursiveCharacterTextSplitter(
     chunk_overlap=50
 )
 
-if uploaded_file is not None:
-    chunks = splitter.split_documents(docs)
+# if uploaded_file is not None:
+#     chunks = splitter.split_documents(docs)
 
 
 # embeddings = HuggingFaceEmbeddings(
@@ -452,9 +457,7 @@ if uploaded_file is not None:
 @st.cache_resource
 def create_vectorstore(chunks):
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
+    embeddings = load_embeddings()
 
     vectorstore = FAISS.from_documents(
         chunks,
@@ -473,7 +476,7 @@ if uploaded_file is not None:
         search_type="similarity",
         search_kwargs={"k": 3}
     )
-
+    st.session_state.retriever = retriever
 
 # Settings Columns
 col1, col2, col3 = st.columns(3)
@@ -519,6 +522,12 @@ if st.button("✨ Generate Explanation", use_container_width=False, type="primar
         with st.spinner("🤖 AI is thinking..."):
             try:
                 # Retrieve docs
+                retriever = st.session_state.get("retriever")
+
+                if retriever is None:
+                    st.error("Please upload a PDF first.")
+                    st.stop()
+
                 docs = retriever.invoke(topic)
 
                 # Combine retrieved chunks
