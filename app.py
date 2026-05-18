@@ -19,6 +19,9 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.vectorstores import FAISS
 
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+
 
 
 # Load environment variables
@@ -430,7 +433,6 @@ with col2:
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 # from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 splitter = RecursiveCharacterTextSplitter(
     chunk_size=500,
@@ -1051,8 +1053,8 @@ def main():
     # """, unsafe_allow_html=True)
 
 
-main()
-
+if st.session_state.get("last_result"):
+    main()
 
 
 # # Footer
