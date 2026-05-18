@@ -15,7 +15,8 @@ import tempfile
 from langchain_community.document_loaders import PyPDFLoader
 
 
-from langchain_community.embeddings import HuggingFaceEmbeddings
+# from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.vectorstores import FAISS
 
 
@@ -173,9 +174,10 @@ st.markdown("""
 # ==================== SESSION STATE INITIALIZATION ====================
 @st.cache_resource
 def load_embeddings():
-    return HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
+    # return HuggingFaceEmbeddings(
+    #     model_name="sentence-transformers/all-MiniLM-L6-v2"
+    # )
+    return FastEmbedEmbeddings()
 def init_session_state():
     """Initialize all session state variables safely"""
     if 'learning_history' not in st.session_state:
