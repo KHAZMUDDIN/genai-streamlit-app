@@ -314,12 +314,12 @@ with st.sidebar:
         st.info("No learning history yet. Start exploring!")
 
 # ==================== MAIN CONTENT ====================
-st.markdown("# 🎓 AI Learner")
+# st.markdown("# 🎓 AI Learner")
 st.markdown(
-    "<center><i>Master any topic with AI-powered personalized explanations</i></center>", 
+    "<center><i>**Master any topic with AI-powered personalized explanations**</i></center>", 
     unsafe_allow_html=True
 )
-st.divider()
+# st.divider()
 
 # Stat Cards
 # col1, col2, col3 = st.columns(3)
@@ -353,38 +353,44 @@ st.divider()
 # st.divider()
 
 # Main Input Section
-st.markdown("### 📝 Generate Explanation")
+# st.markdown("### 📝 Generate Explanation")
 
 # Topic Input - Fixed to use session state
 col1, col2 = st.columns([4, 1])
 
 with col1:
+    st.markdown("### **Enter Topic**")  # Bold and larger using heading
     topic = st.text_input(
-        "Enter Topic",
+        "",
         placeholder="e.g., Quantum Computing, Machine Learning, etc.",
-        key="topic_main_input"
+        key="topic_main_input",
+        label_visibility="collapsed"  # Hide default label
     )
 
-with col2:
-    if st.button("🎲 Random", use_container_width=True):
-        topic = get_random_topic()
-        st.rerun()
+# with col2:
+#     if st.button("🎲 Random", use_container_width=True):
+#         topic = get_random_topic()
+#         st.rerun()
 
 # Settings Columns
 col1, col2, col3 = st.columns(3)
 
 with col1:
+    st.markdown("### **Explanation Style**")
     way = st.selectbox(
-        "Explanation Style",
+        "",
         ["easy", "technical", "5 year old", "professional", "creative", "comparative"],
-        key="style_select"
+        key="style_select",
+        label_visibility="collapsed"  # This removes the label space
     )
 
 with col2:
+    st.markdown("### **Length**")
     length = st.selectbox(
-        "Length",
+        "",
         ["very short", "short", "medium", "long", "very long"],
-        key="length_select"
+        key="length_select",
+        label_visibility="collapsed"  # This removes the label space
     )
 
 with col3:
@@ -448,41 +454,417 @@ Keep the explanation {length}.
                 st.markdown(result.content)
                 st.markdown('</div>', unsafe_allow_html=True)
                 
-                # Action Buttons
-                col1, col2, col3 = st.columns(3)
+                # # Action Buttons
+                # col1, col2, col3 = st.columns(3)
                 
-                with col1:
-                    if st.button("❤️ Add to Favorites"):
-                        st.session_state.learning_history[-1]['is_favorite'] = True
-                        save_history_to_file()
-                        st.success("⭐ Added to favorites!")
+                # with col1:
+                #     if st.button("❤️ Add to Favorites"):
+                #         st.session_state.learning_history[-1]['is_favorite'] = True
+                #         save_history_to_file()
+                #         st.success("⭐ Added to favorites!")
                 
-                with col2:
-                    if st.button("📋 Copy to Clipboard"):
-                        st.success("✅ Copied! (Use Ctrl+V to paste)")
+                # with col2:
+                #     if st.button("📋 Copy to Clipboard"):
+                #         st.success("✅ Copied! (Use Ctrl+V to paste)")
                 
-                with col3:
-                    if st.button("💾 Export as Text"):
-                        st.download_button(
-                            label="📥 Download",
-                            data=result.content,
-                            file_name=f"{topic}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                            mime="text/plain"
-                        )
+                # with col3:
+                #     if st.button("💾 Export as Text"):
+                #         st.download_button(
+                #             label="📥 Download",
+                #             data=result.content,
+                #             file_name=f"{topic}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                #             mime="text/plain"
+                #         )
                 
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
                 st.info("Make sure your GROQ_API_KEY is set in .env file")
+#==============================================================================
 
-# Footer
-st.divider()
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.caption("🚀 Powered by Groq LLMs")
-with col2:
-    st.caption("💡 LangChain Integration")
-with col3:
-    st.caption("📱 Streamlit Interface")
+import streamlit as st
+from PIL import Image, ImageDraw, ImageFont
+import io
+from datetime import datetime
 
-st.caption("---")
-st.caption("*AI Learner Pro v2.0 - Master any topic with intelligent explanations*")
+def create_flashcard_image(topic, content, width=800, height=600):
+    """
+    Create a flashcard as a PIL Image object
+    """
+    # Create a new image with white background
+    img = Image.new('RGB', (width, height), color='white')
+    draw = ImageDraw.Draw(img)
+    
+    # Try to load a nice font, fall back to default if not available
+    try:
+        # You can download and use custom fonts
+        title_font = ImageFont.truetype("arial.ttf", 40)
+        content_font = ImageFont.truetype("arial.ttf", 28)
+        footer_font = ImageFont.truetype("arial.ttf", 16)
+    except:
+        title_font = ImageFont.load_default()
+        content_font = ImageFont.load_default()
+        footer_font = ImageFont.load_default()
+    
+    # Draw decorative border
+    border_padding = 20
+    draw.rectangle(
+        [border_padding, border_padding, width - border_padding, height - border_padding],
+        outline='#667eea',
+        width=3
+    )
+    
+    # Draw header background
+    header_height = 80
+    draw.rectangle([0, 0, width, header_height], fill='#667eea')
+    
+    # Draw topic text
+    topic_text = f"📚 {topic}"
+    # Center the topic text
+    bbox = draw.textbbox((0, 0), topic_text, font=title_font)
+    topic_width = bbox[2] - bbox[0]
+    topic_x = (width - topic_width) // 2
+    topic_y = (header_height - 40) // 2
+    draw.text((topic_x, topic_y), topic_text, fill='white', font=title_font)
+    
+    # Draw content with word wrapping
+    y_position = header_height + 50
+    max_width = width - 80
+    words = content.split()
+    lines = []
+    current_line = []
+    
+    for word in words:
+        test_line = ' '.join(current_line + [word])
+        bbox = draw.textbbox((0, 0), test_line, font=content_font)
+        line_width = bbox[2] - bbox[0]
+        
+        if line_width <= max_width:
+            current_line.append(word)
+        else:
+            if current_line:
+                lines.append(' '.join(current_line))
+            current_line = [word]
+    
+    if current_line:
+        lines.append(' '.join(current_line))
+    
+    # Draw content lines
+    for line in lines:
+        draw.text((40, y_position), line, fill='#333333', font=content_font)
+        y_position += 40
+        
+        # If content exceeds image height, add "..." and break
+        if y_position > height - 100:
+            draw.text((40, y_position), "...", fill='#333333', font=content_font)
+            break
+    
+    # Draw footer
+    footer_text = f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+    bbox = draw.textbbox((0, 0), footer_text, font=footer_font)
+    footer_width = bbox[2] - bbox[0]
+    draw.text((width - footer_width - 20, height - 30), footer_text, fill='#999999', font=footer_font)
+    
+    # Draw decorative elements
+    # Small dots pattern
+    for i in range(10):
+        draw.ellipse([width - 30, height - 60 + i*5, width - 25, height - 55 + i*5], fill='#667eea')
+    
+    return img
+
+def create_front_back_flashcard(topic, content, width=800, height=600):
+    """
+    Create front and back of flashcard
+    """
+    # Front card (question side)
+    front_img = Image.new('RGB', (width, height), color='white')
+    draw = ImageDraw.Draw(front_img)
+    
+    try:
+        title_font = ImageFont.truetype("arial.ttf", 44)
+        content_font = ImageFont.truetype("arial.ttf", 32)
+        footer_font = ImageFont.truetype("arial.ttf", 16)
+    except:
+        title_font = ImageFont.load_default()
+        content_font = ImageFont.load_default()
+        footer_font = ImageFont.load_default()
+    
+    # Gradient-like background for front
+    for i in range(height):
+        color_value = 255 - int(i * 0.1)
+        draw.rectangle([0, i, width, i+1], fill=(color_value, color_value, 255))
+    
+    # Question mark icon
+    draw.text((width//2 - 60, height//2 - 100), "?", fill='#667eea', font=ImageFont.truetype("arial.ttf", 120) if "arial.ttf" else title_font)
+    
+    # Topic text
+    bbox = draw.textbbox((0, 0), topic, font=title_font)
+    topic_width = bbox[2] - bbox[0]
+    topic_x = (width - topic_width) // 2
+    draw.text((topic_x, height//2 - 20), topic, fill='#333333', font=title_font)
+    
+    # Instruction
+    draw.text((width//2 - 100, height - 50), "📖 Flip for answer", fill='#999999', font=footer_font)
+    
+    # Back card (answer side)
+    back_img = Image.new('RGB', (width, height), color='white')
+    draw_back = ImageDraw.Draw(back_img)
+    
+    # Gradient background for back
+    for i in range(height):
+        color_value = 255 - int(i * 0.1)
+        draw_back.rectangle([0, i, width, i+1], fill=(255, color_value, color_value))
+    
+    # Header
+    draw_back.rectangle([0, 0, width, 80], fill='#764ba2')
+    draw_back.text((width//2 - 100, 25), "📝 Answer", fill='white', font=title_font)
+    
+    # Content with word wrapping
+    y_position = 120
+    max_width = width - 80
+    words = content.split()
+    lines = []
+    current_line = []
+    
+    for word in words:
+        test_line = ' '.join(current_line + [word])
+        bbox = draw_back.textbbox((0, 0), test_line, font=content_font)
+        line_width = bbox[2] - bbox[0]
+        
+        if line_width <= max_width:
+            current_line.append(word)
+        else:
+            if current_line:
+                lines.append(' '.join(current_line))
+            current_line = [word]
+    
+    if current_line:
+        lines.append(' '.join(current_line))
+    
+    for line in lines:
+        draw_back.text((40, y_position), line, fill='#333333', font=content_font)
+        y_position += 40
+        if y_position > height - 100:
+            draw_back.text((40, y_position), "...", fill='#333333', font=content_font)
+            break
+    
+    return front_img, back_img
+
+def main():
+    # st.set_page_config(
+    #     page_title="Topic Flashcard",
+    #     page_icon="🖼️",
+    #     layout="wide"
+    # )
+    
+    # Custom CSS
+    # st.markdown("""
+    #     <style>
+    #     .stApp {
+    #         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    #     }
+    #     .main-header {
+    #         text-align: center;
+    #         color: white;
+    #         padding: 20px;
+    #         border-radius: 10px;
+    #         margin-bottom: 30px;
+    #     }
+    #     .flashcard-container {
+    #         background: white;
+    #         border-radius: 15px;
+    #         padding: 20px;
+    #         margin: 20px 0;
+    #         box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    #     }
+    #     </style>
+    # """, unsafe_allow_html=True)
+
+    content = st.session_state.last_result
+    
+    # Header
+    # st.markdown("""
+    #     <div class="main-header">
+    #         <h1>🖼️ Image Flashcard Generator</h1>
+    #         <p>Create beautiful flashcards as images with download option</p>
+    #     </div>
+    # """, unsafe_allow_html=True)
+    
+    # Input section
+    # col1, col2 = st.columns(2)
+    
+    # with col1:
+        # st.markdown("### ✏️ Enter Topic/Question")
+        # topic = st.text_area(
+        #     "**Topic**",
+        #     placeholder="Enter the topic or question here...",
+        #     height=100,
+        #     help="This will be prominently displayed on the flashcard"
+        # )
+        
+        # # Flashcard style selection
+        # flashcard_style = st.selectbox(
+        #     "🎨 Flashcard Style",
+        #     ["Simple Card", "Front & Back Card"]
+        # )
+    
+    # with col2:
+        # st.markdown("### 📝 Enter Content/Answer")
+        # content = st.text_area(
+        #     "**Content**",
+        #     placeholder="Enter the content or answer here...",
+        #     height=100,
+        #     help="This will be displayed as the main content"
+        # )
+        
+        # # Image size selection
+        # img_size = st.selectbox(
+        #     "📏 Image Size",
+        #     ["Small (600x400)", "Medium (800x600)", "Large (1000x700)"]
+        # )
+    
+    if topic and content:
+        st.markdown("---")
+        st.markdown("### 🎴 Generated Flashcard")
+        # Image size selection
+        st.markdown("### **📏 Image Size**")
+        img_size = st.selectbox(
+            "",
+            ["Small (600x400)", "Medium (800x600)", "Large (1000x700)"],
+            label_visibility="collapsed"  # Hide default label
+        )
+        
+        # Map size selection to dimensions
+        size_map = {
+            "Small (600x400)": (600, 400),
+            "Medium (800x600)": (800, 600),
+            "Large (1000x700)": (1000, 700)
+        }
+        width, height = size_map[img_size]
+        
+        # Generate flashcard based on style
+        img = create_flashcard_image(topic, content, width, height)
+        
+        # Display in columns for better layout
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.image(img, caption=f"Flashcard: {topic}", use_container_width=True)
+        
+        # Download button
+        # st.markdown("### 💾 Download Flashcard")
+        
+        # Convert PIL Image to bytes for download
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='PNG', quality=95)
+        img_byte_arr = img_byte_arr.getvalue()
+        
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col2:
+            st.download_button(
+                label="📥 Download Flashcard as PNG",
+                data=img_byte_arr,
+                file_name=f"flashcard_{topic.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+                mime="image/png",
+                use_container_width=True
+            )
+        
+        # else:  # Front & Back Card
+        #     front_img, back_img = create_front_back_flashcard(topic, content, width, height)
+            
+        #     # Display front and back side by side
+        #     col1, col2 = st.columns(2)
+        #     with col1:
+        #         st.image(front_img, caption="📖 Front Side (Question)", use_container_width=True)
+        #     with col2:
+        #         st.image(back_img, caption="📝 Back Side (Answer)", use_container_width=True)
+            
+        #     # Download buttons for both sides
+        #     st.markdown("### 💾 Download Flashcards")
+            
+        #     col1, col2 = st.columns(2)
+            
+        #     with col1:
+        #         # Convert front image to bytes
+        #         front_byte_arr = io.BytesIO()
+        #         front_img.save(front_byte_arr, format='PNG', quality=95)
+        #         front_byte_arr = front_byte_arr.getvalue()
+                
+        #         st.download_button(
+        #             label="📥 Download Front Side",
+        #             data=front_byte_arr,
+        #             file_name=f"flashcard_front_{topic.replace(' ', '_')}.png",
+        #             mime="image/png",
+        #             use_container_width=True,
+        #             key="front_download"
+        #         )
+            
+        #     with col2:
+        #         # Convert back image to bytes
+        #         back_byte_arr = io.BytesIO()
+        #         back_img.save(back_byte_arr, format='PNG', quality=95)
+        #         back_byte_arr = back_byte_arr.getvalue()
+                
+        #         st.download_button(
+        #             label="📥 Download Back Side",
+        #             data=back_byte_arr,
+        #             file_name=f"flashcard_back_{topic.replace(' ', '_')}.png",
+        #             mime="image/png",
+        #             use_container_width=True,
+        #             key="back_download"
+        #         )
+        
+        # # Success message
+        # st.success("✅ Flashcard generated successfully! Click the download button to save it.")
+        
+#         # Tips section
+#         with st.expander("💡 Tips for better flashcards"):
+#             st.markdown("""
+#             - **Keep content concise:** Use bullet points or short sentences
+#             - **Use clear topics:** Make sure the question is specific
+#             - **Add formatting:** You can use line breaks and paragraphs
+#             - **Customize size:** Choose larger size for more content
+#             - **Print ready:** PNG images are perfect for printing physical flashcards
+#             """)
+    
+#     else:
+#         st.warning("⚠️ Please enter both Topic and Content to generate the flashcard")
+        
+#         # Example button
+#         if st.button("📚 Load Example", use_container_width=True):
+#             st.session_state.topic = "What is Python?"
+#             st.session_state.content = """Python is a high-level, interpreted programming language known for:
+# • Simple and readable syntax
+# • Dynamic typing
+# • Extensive standard library
+# • Great for AI, web dev, and automation
+# • Created by Guido van Rossum in 1991"""
+#             st.rerun()
+        
+        # # Show example if loaded
+        # if 'topic' in st.session_state:
+        #     st.info(f"**Example Loaded:**\n\nTopic: {st.session_state.topic}\n\nContent: {st.session_state.content}")
+    
+    # # Footer
+    # st.markdown("---")
+    # st.markdown("""
+    #     <div style="text-align: center; color: white;">
+    #         <small>✨ Generate printable image flashcards | Download as high-quality PNG ✨</small>
+    #     </div>
+    # """, unsafe_allow_html=True)
+
+
+main()
+
+
+
+# # Footer
+# st.divider()
+# col1, col2, col3 = st.columns(3)
+# with col1:
+#     st.caption("🚀 Powered by Groq LLMs")
+# with col2:
+#     st.caption("💡 LangChain Integration")
+# with col3:
+#     st.caption("📱 Streamlit Interface")
+
+# st.caption("---")
+# st.caption("*AI Learner Pro v2.0 - Master any topic with intelligent explanations*")

@@ -1,10 +1,20 @@
 [
   {
-    "timestamp": "2026-05-17T05:52:12.449848",
-    "topic": "initial_sidebar_state=\"expanded\" opposite of this in streamlit",
+    "timestamp": "2026-05-18T08:39:56.826215",
+    "topic": "PEFT and SEFT",
     "style": "easy",
     "length": "very short",
-    "result": "In Streamlit, `initial_sidebar_state=\"expanded\"` means the sidebar is open by default. \n\nThe opposite is `initial_sidebar_state=\"collapsed\"`, which means the sidebar is closed by default.\n\nExample:\n```python\nst.sidebar.image(\"image.jpg\", initial_sidebar_state=\"expanded\")  # Open\nst.sidebar.image(\"image.jpg\", initial_sidebar_state=\"collapsed\")  # Closed\n```",
+    "result": "PEFT (Progressive Emotional Freedom Techniques) and SEFT (Simple Emotional Freedom Techniques) are similar to tapping therapy. \n\n- PEFT: Tap on 7-12 points to release emotions (e.g., anxiety). \nExample: Tap while saying \"I release my exam anxiety.\"\n\n- SEFT: Tap on 3-4 main points for quicker relief (e.g., stress). \nExample: Tap while saying \"I let go of my work stress.\"",
+    "model": "llama-3.3-70b-versatile",
+    "temperature": 0.7,
+    "is_favorite": false
+  },
+  {
+    "timestamp": "2026-05-18T09:07:35.803749",
+    "topic": "Cross-Encoder Reranking (BGE-Reranker)",
+    "style": "easy",
+    "length": "very short",
+    "result": "Cross-Encoder Reranking (BGE-Reranker) is a technique that re-ranks the top results from a search query to improve accuracy. \n\nExample: You search for \"best Italian restaurants\". A base model gives you a list, but BGE-Reranker re-evaluates the top results to give you a more accurate list, like re-ranking a restaurant that's actually French to a lower position.",
     "model": "llama-3.3-70b-versatile",
     "temperature": 0.7,
     "is_favorite": false
