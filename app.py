@@ -411,8 +411,8 @@ with col2:
 #         st.rerun()
     
 
-    st.title("📄 PDF Document Loader")
-    st.write("Upload a PDF file to extract its content using LangChain's PyPDFLoader.")
+    # st.title("📄 PDF Document Loader")
+    # st.write("Upload a PDF file to extract its content using LangChain's PyPDFLoader.")
 
     # 1. Create the file uploader widget
     uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf"])
@@ -438,10 +438,10 @@ with col2:
                 st.success(f"Successfully loaded {len(docs)} pages!")
 
                 # Optional: Preview the extracted content in the UI
-                st.subheader("Preview Extracted Content")
-                for i, doc in enumerate(docs):
-                    with st.expander(f"Page {i+1}"):
-                        st.write(doc.page_content)
+                # st.subheader("Preview Extracted Content")
+                # for i, doc in enumerate(docs):
+                #     with st.expander(f"Page {i+1}"):
+                #         st.write(doc.page_content)
 
             except Exception as e:
                 st.error(f"An error occurred: {e}")
