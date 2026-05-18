@@ -79,7 +79,7 @@ st.markdown("""
     
     /* Buttons */
     .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         color: white;
         border: none;
         border-radius: 10px;
@@ -411,7 +411,7 @@ with st.expander("⚡ Advanced Options"):
         include_practice = st.checkbox("🎯 Practice Questions", value=False)
         auto_save = st.checkbox("💾 Auto-save Results", value=True)
 
-if st.button("✨ Generate Explanation", use_container_width=True, type="primary"):
+if st.button("✨ Generate Explanation", use_container_width=False, type="primary"):
     
     if not topic or not topic.strip():
         st.error("❌ Please enter a topic!")
