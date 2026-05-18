@@ -452,7 +452,7 @@ Keep the explanation {length}.
                 st.markdown(f"**Style:** {way} | **Length:** {length}")
                 st.divider()
                 st.markdown(result.content)
-                st.markdown('</div>', unsafe_allow_html=True)
+                # st.markdown('</div>', unsafe_allow_html=True)
                 
                 # # Action Buttons
                 # col1, col2, col3 = st.columns(3)
