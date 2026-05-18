@@ -20,7 +20,9 @@ from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.vectorstores import FAISS
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+# from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+
 
 
 
@@ -177,15 +179,21 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==================== SESSION STATE INITIALIZATION ====================
+# @st.cache_resource
+# def load_embeddings():
+#     # return HuggingFaceEmbeddings(
+#     #     model_name="sentence-transformers/all-MiniLM-L6-v2"
+#     # )
+#     # return FastEmbedEmbeddings()
+#     return HuggingFaceEmbeddings(
+#         model_name="sentence-transformers/all-MiniLM-L6-v2"
+#     )
+
+
 @st.cache_resource
 def load_embeddings():
-    # return HuggingFaceEmbeddings(
-    #     model_name="sentence-transformers/all-MiniLM-L6-v2"
-    # )
-    # return FastEmbedEmbeddings()
-    return HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
+    return FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+
 def init_session_state():
     """Initialize all session state variables safely"""
     if 'learning_history' not in st.session_state:

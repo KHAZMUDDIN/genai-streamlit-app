@@ -1,13 +1,11 @@
-streamlit==1.45.1
-langchain==0.3.25
-langchain-core==0.3.59
-langchain-community==0.3.24
-langchain-groq==0.3.2
-langchain-text-splitters==0.3.8
-python-dotenv==1.1.0
-faiss-cpu==1.7.4
-pypdf==5.5.0
-fastembed==0.3.6
-Pillow==10.4.0
-onnxruntime==1.19.2
-sentence-transformers
+# requirements.txt
+streamlit
+langchain
+langchain-community
+langchain-groq
+langchain-text-splitters
+pypdf
+fastembed
+faiss-cpu
+pillow
+python-dotenv
