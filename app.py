@@ -408,7 +408,6 @@ with st.expander("⚡ Advanced Options"):
         include_practice = st.checkbox("🎯 Practice Questions", value=False)
         auto_save = st.checkbox("💾 Auto-save Results", value=True)
 
-# Generate Button
 if st.button("✨ Generate Explanation", use_container_width=True, type="primary"):
     
     if not topic or not topic.strip():
@@ -441,7 +440,13 @@ Keep the explanation {length}.
                 chain = template | llm
                 result = chain.invoke({})
                 
+                # Store in session state with additional flags
                 st.session_state.last_result = result.content
+                st.session_state.last_topic = topic
+                st.session_state.last_way = way
+                st.session_state.last_length = length
+                st.session_state.generation_timestamp = datetime.now()
+                st.session_state.has_generated = True  # Flag to indicate content exists
                 
                 # Save to history
                 add_to_history(topic, way, length, result.content, model, temperature)
@@ -452,33 +457,25 @@ Keep the explanation {length}.
                 st.markdown(f"**Style:** {way} | **Length:** {length}")
                 st.divider()
                 st.markdown(result.content)
-                # st.markdown('</div>', unsafe_allow_html=True)
-                
-                # # Action Buttons
-                # col1, col2, col3 = st.columns(3)
-                
-                # with col1:
-                #     if st.button("❤️ Add to Favorites"):
-                #         st.session_state.learning_history[-1]['is_favorite'] = True
-                #         save_history_to_file()
-                #         st.success("⭐ Added to favorites!")
-                
-                # with col2:
-                #     if st.button("📋 Copy to Clipboard"):
-                #         st.success("✅ Copied! (Use Ctrl+V to paste)")
-                
-                # with col3:
-                #     if st.button("💾 Export as Text"):
-                #         st.download_button(
-                #             label="📥 Download",
-                #             data=result.content,
-                #             file_name=f"{topic}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                #             mime="text/plain"
-                #         )
                 
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
                 st.info("Make sure your GROQ_API_KEY is set in .env file")
+
+# Display previously generated content if it exists and no new generation
+else:
+    # Check if we have previously generated content
+    if st.session_state.get('has_generated', False):
+        st.markdown('<div class="result-container">', unsafe_allow_html=True)
+        st.markdown(f"### 📚 {st.session_state.get('last_topic', '')}")
+        st.markdown(f"**Style:** {st.session_state.get('last_way', '')} | **Length:** {st.session_state.get('last_length', '')}")
+        st.divider()
+        st.markdown(st.session_state.get('last_result', ''))
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Optional: Show timestamp of when it was generated
+        if 'generation_timestamp' in st.session_state:
+            st.caption(f"📅 Generated: {st.session_state.generation_timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
 #==============================================================================
 
 import streamlit as st
