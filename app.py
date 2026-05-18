@@ -9,6 +9,9 @@ import random
 from PIL import Image, ImageDraw, ImageFont
 import io
 
+from langchain_core.output_parsers import BaseOutputParser
+
+
 # Load environment variables
 load_dotenv()
 
@@ -248,7 +251,8 @@ with st.sidebar:
     # Model Selection
     model = st.selectbox(
         "🤖 Select AI Model",
-        ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"],
+        # ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"],
+        ["llama-3.3-70b-versatile"],
         help="Choose the LLM model for explanations"
     )
     
@@ -480,6 +484,8 @@ else:
         if 'generation_timestamp' in st.session_state:
             st.caption(f"📅 Generated: {st.session_state.generation_timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
 #==============================================================================
+#                          Flash Card feature
+#==============================================================================
 
 def create_flashcard_image(topic, content, width=800, height=600):
     """
@@ -507,10 +513,10 @@ def create_flashcard_image(topic, content, width=800, height=600):
         outline='#667eea',
         width=3
     )
-    
+
     # Draw header background
     header_height = 80
-    draw.rectangle([0, 0, width, header_height], fill='#667eea')
+    draw.rectangle([0, 0, width, header_height], fill="#90ea66")
     
     # Draw topic text
     topic_text = f"📚 {topic}"
@@ -673,8 +679,63 @@ def main():
     #     }
     #     </style>
     # """, unsafe_allow_html=True)
+    # Custom output parser to clean the summary
+    class SummaryOutputParser(BaseOutputParser):
+        def parse(self, text):
+            # Clean up the summary text
+            text = text.strip()
+            # Remove any extra whitespace
+            text = ' '.join(text.split())
+            return text
+    def create_flashcard_summary(content, model="llama-3.3-70b-versatile", temperature=0.3):
+        """
+        Create a very short summary for flashcard image
+        
+        Args:
+            content (str): The content to summarize
+            model (str): Groq model name
+            temperature (float): Temperature for LLM (0-1)
+        
+        Returns:
+            str: Summarized content for flashcard
+        """
+        
+        # Create LLM instance
+        llm = ChatGroq(
+            model=model, 
+            temperature=temperature,
+            # groq_api_key=st.secrets["GROQ_API_KEY"]  # Or pass directly
+        )
+        
+        # Define the prompt template for summarization
+        prompt_template = PromptTemplate(
+            template="""You are an expert at creating concise summaries for flashcards. 
+    Your task is to summarize the given content into a SHORT, clear, and memorable format suitable for a flashcard image.
 
-    content = st.session_state.last_result
+    RULES FOR SUMMARY:
+    1. Keep it SHORT
+    2. Focus on the MOST IMPORTANT key points only
+    3. Use simple, easy-to-understand language
+    4. Make it visually scannable
+    5. Remove any fluff, examples, or redundant information
+    6. Ensure the summary captures the CORE concept
+    7. If there was any technical term then add it in short
+
+    Content to summarize:
+    {content}
+
+    Generate a VERY SHORT summary for a flashcard image:""",
+            input_variables=["content"]
+        )
+        
+        # Create and invoke the chain
+        chain = prompt_template | llm | SummaryOutputParser()
+        result = chain.invoke({"content": content})
+        
+        return result
+
+    # content = st.session_state.last_result
+    content = create_flashcard_summary(st.session_state.last_result,model, temperature)
     
     # Header
     # st.markdown("""
