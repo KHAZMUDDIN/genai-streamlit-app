@@ -6,6 +6,9 @@ from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
 import random
 
+from PIL import Image, ImageDraw, ImageFont
+import io
+
 # Load environment variables
 load_dotenv()
 
@@ -452,7 +455,7 @@ Keep the explanation {length}.
                 add_to_history(topic, way, length, result.content, model, temperature)
                 
                 # Display Result
-                st.markdown('<div class="result-container">', unsafe_allow_html=True)
+                # st.markdown('<div class="result-container">', unsafe_allow_html=True)
                 st.markdown(f"### 📚 {topic}")
                 st.markdown(f"**Style:** {way} | **Length:** {length}")
                 st.divider()
@@ -466,7 +469,7 @@ Keep the explanation {length}.
 else:
     # Check if we have previously generated content
     if st.session_state.get('has_generated', False):
-        st.markdown('<div class="result-container">', unsafe_allow_html=True)
+        # st.markdown('<div class="result-containe?r">', unsafe_allow_html=True)
         st.markdown(f"### 📚 {st.session_state.get('last_topic', '')}")
         st.markdown(f"**Style:** {st.session_state.get('last_way', '')} | **Length:** {st.session_state.get('last_length', '')}")
         st.divider()
@@ -477,11 +480,6 @@ else:
         if 'generation_timestamp' in st.session_state:
             st.caption(f"📅 Generated: {st.session_state.generation_timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
 #==============================================================================
-
-import streamlit as st
-from PIL import Image, ImageDraw, ImageFont
-import io
-from datetime import datetime
 
 def create_flashcard_image(topic, content, width=800, height=600):
     """
