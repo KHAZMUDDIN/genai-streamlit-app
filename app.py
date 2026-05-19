@@ -541,16 +541,30 @@ if st.button("✨ Generate Explanation", use_container_width=False, type="primar
                 # Retrieve docs
                 retriever = st.session_state.get("retriever")
 
-                if retriever is None:
+                # if retriever is None:
+                #     st.error("Please upload a PDF first.")
+                #     st.stop()
+
+                # docs = retriever.invoke(topic)
+
+                # # Combine retrieved chunks
+                # context = "\n\n".join(
+                #     [doc.page_content for doc in docs]
+                # )
+
+                if retriever is not None:
                     st.error("Please upload a PDF first.")
                     st.stop()
 
-                docs = retriever.invoke(topic)
+                    docs = retriever.invoke(topic)
 
-                # Combine retrieved chunks
-                context = "\n\n".join(
-                    [doc.page_content for doc in docs]
-                )
+                    # Combine retrieved chunks
+                    context = "\n\n".join(
+                        [doc.page_content for doc in docs]
+                    )
+                if retriever is None:
+                    context = "No context"
+
                 # Build enhanced prompt
                 # prompt_text = f"""
                 # Explain {topic} in a {way} way.

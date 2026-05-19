@@ -1,10 +1,10 @@
 [
   {
-    "timestamp": "2026-05-18T22:47:41.442984",
-    "topic": "who was the wife of Elstromeda?",
+    "timestamp": "2026-05-19T09:54:06.447353",
+    "topic": "ColBERT late interaction embeddings",
     "style": "easy",
     "length": "very short",
-    "result": "The wife of the person narrating (not Elstromeda) is Rebzella, the god of life, who was managing Elstromeda. Think of it like a city manager - Rebzella was in charge of Elstromeda, but it's not her husband. For example, if a mayor is in charge of a city, their spouse isn't the city itself.",
+    "result": "ColBERT uses late interaction embeddings, which combine query and document embeddings late in the search process. For example, think of it like a two-stage filter: first, it narrows down search results, then it fine-tunes the ranking using these combined embeddings.",
     "model": "llama-3.3-70b-versatile",
     "temperature": 0.7,
     "is_favorite": false
