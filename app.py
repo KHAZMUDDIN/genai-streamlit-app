@@ -538,32 +538,32 @@ if st.button("✨ Generate Explanation", use_container_width=False, type="primar
     else:
         with st.spinner("🤖 AI is thinking..."):
             try:
-                # Retrieve docs
-                retriever = st.session_state.get("retriever")
+                # # Retrieve docs
+                # retriever = st.session_state.get("retriever")
 
-                # if retriever is None:
+                # # if retriever is None:
+                # #     st.error("Please upload a PDF first.")
+                # #     st.stop()
+
+                # # docs = retriever.invoke(topic)
+
+                # # # Combine retrieved chunks
+                # # context = "\n\n".join(
+                # #     [doc.page_content for doc in docs]
+                # # )
+
+                # if retriever is not None:
                 #     st.error("Please upload a PDF first.")
                 #     st.stop()
 
-                # docs = retriever.invoke(topic)
+                #     docs = retriever.invoke(topic)
 
-                # # Combine retrieved chunks
-                # context = "\n\n".join(
-                #     [doc.page_content for doc in docs]
-                # )
-
-                if retriever is not None:
-                    st.error("Please upload a PDF first.")
-                    st.stop()
-
-                    docs = retriever.invoke(topic)
-
-                    # Combine retrieved chunks
-                    context = "\n\n".join(
-                        [doc.page_content for doc in docs]
-                    )
-                if retriever is None:
-                    context = "No context"
+                #     # Combine retrieved chunks
+                #     context = "\n\n".join(
+                #         [doc.page_content for doc in docs]
+                #     )
+                # if retriever is None:
+                #     context = "No context"
 
                 # Build enhanced prompt
                 # prompt_text = f"""
@@ -571,6 +571,20 @@ if st.button("✨ Generate Explanation", use_container_width=False, type="primar
                 # Keep the explanation {length}.
                 # context: {context}.
                 # """
+
+                # Retrieve docs
+                retriever = st.session_state.get("retriever")
+
+                if retriever is None:
+                    st.error("Please upload a PDF first.")
+                    context = "No context"
+                else:
+                    docs = retriever.invoke(topic)
+                    
+                    # Combine retrieved chunks
+                    context = "\n\n".join(
+                        [doc.page_content for doc in docs]
+                    )
                 prompt_text = """
                 You are a helpful AI assistant.
 
