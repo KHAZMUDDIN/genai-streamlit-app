@@ -576,7 +576,7 @@ if st.button("✨ Generate Explanation", use_container_width=False, type="primar
                 retriever = st.session_state.get("retriever")
 
                 if retriever is None:
-                    st.error("Please upload a PDF first.")
+                    # st.error("Please upload a PDF first.")
                     context = "No context"
                 else:
                     docs = retriever.invoke(topic)
