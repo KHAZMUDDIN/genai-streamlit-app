@@ -197,7 +197,6 @@ def init_session_state():
     if "show_quiz" not in st.session_state:
         st.session_state.show_quiz = False
 
-    """Initialize all session state variables safely"""
     if 'test_questions' not in st.session_state:
         st.session_state.test_questions = None
     if 'user_answers' not in st.session_state:
