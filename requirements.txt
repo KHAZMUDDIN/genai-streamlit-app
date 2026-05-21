@@ -9,3 +9,6 @@ fastembed
 faiss-cpu
 pillow
 python-dotenv
+plotly>=5.17.0
+reportlab>=4.0.0
+pandas>=1.5.0

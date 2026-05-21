@@ -20,6 +20,10 @@ from langchain_community.vectorstores import FAISS
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+import plotly.graph_objects as go
+
+
+import quiz
 
 
 # Load environment variables
@@ -190,6 +194,22 @@ def init_session_state():
         st.session_state.last_result = None
     if 'stats' not in st.session_state:
         st.session_state.stats = {'total_learns': 0, 'total_saves': 0}
+    if "show_quiz" not in st.session_state:
+        st.session_state.show_quiz = False
+
+    """Initialize all session state variables safely"""
+    if 'test_questions' not in st.session_state:
+        st.session_state.test_questions = None
+    if 'user_answers' not in st.session_state:
+        st.session_state.user_answers = {}
+    if 'test_submitted' not in st.session_state:
+        st.session_state.test_submitted = False
+    if 'test_results' not in st.session_state:
+        st.session_state.test_results = None
+    if 'test_history' not in st.session_state:
+        st.session_state.test_history = []
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = "config"
 
 init_session_state()
 
@@ -525,8 +545,351 @@ def generate_flashcard():
                 use_container_width=True
             )
 
+def quiz_main():
+    st.write("quiz code")
+    # ==================== MAIN CONTENT ====================
+    st.markdown("AI Test Prep Pro")
+    st.markdown("<center><i>Master any topic with AI-generated tests and intelligent analytics</i></center>", unsafe_allow_html=True)
+    st.divider()
+
+    # Page Navigation
+    if st.session_state.test_submitted:
+        current_page = "results"
+    elif st.session_state.test_questions:
+        current_page = "test"
+    else:
+        current_page = "config"
+
+    # ==================== CONFIG PAGE ====================
+    if current_page == "config":
+        st.markdown("### ✏️ Configure Your Test")
+        topic=st.session_state.last_topic
+        
+        # col1, col2 = st.columns([2, 1])
+        # 
+        # with col1:
+            # topic = st.text_input(
+            #     "📖 Test Topic",
+            #     placeholder="e.g., Machine Learning, Quantum Computing, Biology, etc.",
+            #     key="test_topic"
+            # )
+        # with col2:
+        #     difficulty = st.selectbox(
+        #         "📊 Difficulty Level",
+        #         ["Easy", "Medium", "Hard"],
+        #         key="test_difficulty"
+        #     )
+
+        difficulty = st.selectbox(
+                "📊 Difficulty Level",
+                ["Easy", "Medium", "Hard"],
+                key="test_difficulty"
+            )
+        
+        st.divider()
+        
+        st.markdown("### 📋 Question Types")
+        col1, col2 = st.columns(2)
+        
+        question_types = []
+        
+        with col1:
+            if st.checkbox("✅ Multiple Choice (MCQ)", value=True):
+                question_types.append("MCQ")
+            if st.checkbox("✅ Multiple Select (MSQ)", value=True):
+                question_types.append("MSQ")
+            if st.checkbox("✅ True/False", value=True):
+                question_types.append("True/False")
+        
+        with col2:
+            if st.checkbox("✅ Fill in the Blanks", value=True):
+                question_types.append("Fill in the Blanks")
+            if st.checkbox("✅ Subjective", value=True):
+                question_types.append("Subjective")
+        
+        st.divider()
+        
+        num_questions = st.slider(
+            "❓ Number of Questions",
+            min_value=5,
+            max_value=50,
+            value=10,
+            step=5,
+            key="num_questions"
+        )
+        
+        temperature = 0.7
+        # temperature = st.slider(
+        #     "🔥 Creativity Level",
+        #     min_value=0.0,
+        #     max_value=1.0,
+        #     value=0.7,
+        #     step=0.1,
+        #     help="Lower = More Focused, Higher = More Creative"
+        # )
+        
+        st.divider()
+        
+        if st.button("🚀 Generate Test", use_container_width=False, type="primary"):
+            if not topic or not topic.strip():
+                st.error("❌ Please enter a topic!")
+            elif not question_types:
+                st.error("❌ Please select at least one question type!")
+            else:
+                with st.spinner("🤖 Generating your test..."):
+                    questions = quiz.generate_test_questions(
+                        topic=topic,
+                        difficulty=difficulty,
+                        num_questions=num_questions,
+                        question_types=question_types,
+                        temperature=temperature
+                    )
+                    
+                    if questions:
+                        st.session_state.test_questions = questions
+                        st.session_state.test_config = {
+                            'topic': topic,
+                            'difficulty': difficulty,
+                            'num_questions': num_questions,
+                            'question_types': question_types
+                        }
+                        st.session_state.user_answers = {}
+                        st.rerun()
+                    else:
+                        st.error("❌ Failed to generate questions. Please try again.")
+
+    # ==================== TEST PAGE ====================
+    elif current_page == "test":
+        config = st.session_state.test_config
+        
+        st.markdown(f"### 📝 {config['topic']} - {config['difficulty']} Level")
+        st.caption(f"Total Questions: {config['num_questions']}")
+        st.divider()
+        
+        # Display questions
+        for idx, question in enumerate(st.session_state.test_questions):
+            with st.container():
+                st.markdown(f"**Q{idx + 1}. {question.get('question', '')}**")
+                st.caption(f"Type: {question.get('type', 'MCQ')}")
+                
+                if question.get('type') == 'MCQ' or question.get('type') == 'MSQ':
+                    options = question.get('options', [])
+                    if question.get('type') == 'MCQ':
+                        user_answer = st.radio(
+                            "Select answer:",
+                            options=options,
+                            key=f"q_{idx}",
+                            label_visibility="collapsed"
+                        )
+                        st.session_state.user_answers[idx] = user_answer
+                    else:  # MSQ
+                        selected = []
+                        for option in options:
+                            if st.checkbox(option, key=f"msq_{idx}_{option}"):
+                                selected.append(option)
+                        st.session_state.user_answers[idx] = ", ".join(selected) if selected else ""
+                
+                elif question.get('type') == 'True/False':
+                    answer = st.radio(
+                        "Select answer:",
+                        options=["True", "False"],
+                        key=f"q_{idx}",
+                        label_visibility="collapsed"
+                    )
+                    st.session_state.user_answers[idx] = answer
+                
+                elif question.get('type') == 'Fill in the Blanks':
+                    answer = st.text_input(
+                        "Your answer:",
+                        key=f"q_{idx}",
+                        label_visibility="collapsed"
+                    )
+                    st.session_state.user_answers[idx] = answer
+                
+                elif question.get('type') == 'Subjective':
+                    answer = st.text_area(
+                        "Your answer:",
+                        key=f"q_{idx}",
+                        label_visibility="collapsed",
+                        height=100
+                    )
+                    st.session_state.user_answers[idx] = answer
+                
+                st.divider()
+        
+        # Submit button
+        if st.button("✅ Submit Test", use_container_width=True, type="primary"):
+            results = quiz.calculate_score(st.session_state.test_questions, st.session_state.user_answers)
+            st.session_state.test_results = results
+            st.session_state.test_submitted = True
+            
+            # Add to history
+            test_entry = {
+                'topic': config['topic'],
+                'difficulty': config['difficulty'],
+                'correct': results['correct'],
+                'incorrect': results['incorrect'],
+                'unanswered': results['unanswered'],
+                'total': results['total'],
+                'percentage': results['percentage'],
+                'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            st.session_state.test_history.append(test_entry)
+            
+            st.rerun()
+
+    # ==================== RESULTS PAGE ====================
+    elif current_page == "results":
+        if st.session_state.test_results:
+            results = st.session_state.test_results
+            config = st.session_state.test_config
+            
+            st.markdown(f"### 📊 Test Results - {config['topic']}")
+            st.divider()
+            
+            # Score Cards
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.markdown(f"""
+                <div class="stat-card">
+                    <div>✅ Correct</div>
+                    <div class="stat-number">{results['correct']}</div>
+                    <div>{results['correct']/results['total']*100:.1f}%</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                st.markdown(f"""
+                <div class="stat-card">
+                    <div>❌ Incorrect</div>
+                    <div class="stat-number">{results['incorrect']}</div>
+                    <div>{results['incorrect']/results['total']*100:.1f}%</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                st.markdown(f"""
+                <div class="stat-card">
+                    <div>⏭️ Unanswered</div>
+                    <div class="stat-number">{results['unanswered']}</div>
+                    <div>{results['unanswered']/results['total']*100:.1f}%</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col4:
+                st.markdown(f"""
+                <div class="stat-card">
+                    <div>📊 Total Score</div>
+                    <div class="stat-number">{results['percentage']:.1f}%</div>
+                    <div>out of 100</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.divider()
+            
+            # AI Feedback
+            feedback, suggestions = quiz.generate_ai_feedback(results)
+            st.success(feedback)
+            
+            st.markdown("### 💡 Suggestions for Improvement:")
+            for suggestion in suggestions:
+                st.info(suggestion)
+            
+            st.divider()
+            
+            # Charts
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Pie Chart
+                fig_pie = go.Figure(data=[go.Pie(
+                    labels=['Correct', 'Incorrect', 'Unanswered'],
+                    values=[results['correct'], results['incorrect'], results['unanswered']],
+                    marker=dict(colors=['#4caf50', '#f44336', '#ff9800'])
+                )])
+                fig_pie.update_layout(
+                    title="Score Distribution",
+                    height=400,
+                    showlegend=True
+                )
+                st.plotly_chart(fig_pie, use_container_width=True)
+            
+            with col2:
+                # Bar Chart
+                fig_bar = go.Figure(data=[
+                    go.Bar(x=['Correct', 'Incorrect', 'Unanswered'],
+                        y=[results['correct'], results['incorrect'], results['unanswered']],
+                        marker=dict(color=['#4caf50', '#f44336', '#ff9800']))
+                ])
+                fig_bar.update_layout(
+                    title="Question Breakdown",
+                    xaxis_title="Status",
+                    yaxis_title="Count",
+                    height=400
+                )
+                st.plotly_chart(fig_bar, use_container_width=True)
+            
+            st.divider()
+            
+            # Detailed Review
+            st.markdown("### 📖 Detailed Review")
+            
+            for idx, question in enumerate(results['questions']):
+                user_answer = results['user_answers'].get(idx, "Not answered")
+                correct_answer = question.get('correct_answer', '')
+                is_correct = user_answer == correct_answer
+                
+                status = "✅ Correct" if is_correct else "❌ Incorrect"
+                
+                with st.expander(f"{status} - Q{idx + 1}: {question.get('question', '')[:50]}..."):
+                    st.markdown(f"**Question:** {question.get('question', '')}")
+                    st.markdown(f"**Type:** {question.get('type', 'MCQ')}")
+                    
+                    if 'options' in question:
+                        st.markdown("**Options:**")
+                        for option in question.get('options', []):
+                            st.write(f"  • {option}")
+                    
+                    st.markdown(f"**Your Answer:** {user_answer}")
+                    st.markdown(f"**Correct Answer:** {correct_answer}")
+                    st.markdown(f"**Explanation:** {question.get('explanation', 'N/A')}")
+            
+            st.divider()
+            
+            # Download PDF and Retry
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                pdf = quiz.create_pdf_report(results, config['topic'], config['difficulty'])
+                if pdf:
+                    st.download_button(
+                        label="📥 Download PDF Report",
+                        data=pdf,
+                        file_name=f"{config['topic']}_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
+            
+            with col2:
+                if st.button("🔄 Retake Test", use_container_width=True):
+                    st.session_state.test_questions = None
+                    st.session_state.test_submitted = False
+                    st.session_state.user_answers = {}
+                    st.session_state.test_results = None
+                    st.rerun()
+            
+            with col3:
+                if st.button("➕ New Test", use_container_width=True):
+                    st.session_state.test_questions = None
+                    st.session_state.test_submitted = False
+                    st.session_state.user_answers = {}
+                    st.session_state.test_results = None
+                    st.session_state.current_page = "config"
+                    st.rerun()
+
 #==============================================================================
-#                          Main Content
+#                          Main Content - original
 #==============================================================================
 st.markdown(
     "<center><i>**Master any topic with AI-powered personalized explanations**</i></center>", 
@@ -750,8 +1113,23 @@ if st.session_state.get('has_generated', False):
     if 'generation_timestamp' in st.session_state:
         st.caption(f"📅 Generated: {st.session_state.generation_timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
 
-    if st.button("Generate Summarized Flashcard"):
-        if st.session_state.get("last_result"):
-            generate_flashcard()
-        else:
-            st.warning("Please generate a result first.")
+    # if st.button("Generate Summarized Flashcard"):
+    #     if st.session_state.get("last_result"):
+    #         generate_flashcard()
+    #     else:
+    #         st.warning("Please generate a result first.")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("Generate Summarized Flashcard"):
+            if st.session_state.get("last_result"):
+                generate_flashcard()
+            else:
+                st.warning("Please generate a result first.")
+    with col2:
+        if st.button("Attempt Quiz"):
+            st.session_state.show_quiz = True
+
+if st.session_state.get("show_quiz", False):
+    quiz_main()
